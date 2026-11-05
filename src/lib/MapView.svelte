@@ -4,6 +4,7 @@
   import 'maplibre-gl/dist/maplibre-gl.css'
   import { style } from './style.js'
   import { getLighting } from './lighting.js'
+  import { ShadowLayer } from './shadows/ShadowLayer.js'
 
   // MapLibre does its heavy lifting in a web worker. Tell it where Vite put the worker file.
   setWorkerUrl(workerUrl)
@@ -13,8 +14,11 @@
 
   let container
   let map = $state.raw(null) // set once the map has loaded
+  let shadows // the cast-shadow layer
 
   $effect(() => {
+    // Shadows use the same height exaggeration as the 3D terrain, so they match what you see.
+    shadows = new ShadowLayer({ exaggeration: style.terrain.exaggeration })
     const m = new MapLibreMap({
       container,
       style,
@@ -25,7 +29,10 @@
       maxPitch: 85,
     })
     m.addControl(new NavigationControl({ visualizePitch: true }))
-    m.on('load', () => (map = m))
+    m.on('load', () => {
+      m.addLayer(shadows) // on top of the hillshade
+      map = m
+    })
 
     return () => m.remove()
   })
@@ -43,6 +50,8 @@
     map.setPaintProperty('relief', 'color-relief-opacity', light.reliefOpacity)
     map.setPaintProperty('background', 'background-color', light.background)
     map.setSky(light.sky)
+    shadows.setSun(sun.azimuth, sun.altitude)
+    shadows.setColor(light.castShadow)
   })
 </script>
 

@@ -1,6 +1,7 @@
 // The look of the map at different sun altitudes (degrees above the horizon).
 // Between two keyframes, every color is blended smoothly.
 // Colors are [red, green, blue, alpha].
+// `castShadow` is the shade where mountains block the sun (its alpha is the opacity).
 const KEYFRAMES = [
   {
     altitude: -18, // night
@@ -11,6 +12,7 @@ const KEYFRAMES = [
     sky: [2, 4, 15, 1],
     horizon: [11, 16, 38, 1],
     fog: [11, 16, 38, 1],
+    castShadow: [20, 20, 50, 0],
   },
   {
     altitude: -6, // civil twilight
@@ -21,6 +23,7 @@ const KEYFRAMES = [
     sky: [28, 35, 80, 1],
     horizon: [176, 96, 122, 1],
     fog: [58, 51, 96, 1],
+    castShadow: [20, 20, 50, 0],
   },
   {
     altitude: 0, // sunrise / sunset
@@ -31,6 +34,7 @@ const KEYFRAMES = [
     sky: [91, 123, 181, 1],
     horizon: [255, 154, 90, 1],
     fog: [232, 160, 122, 1],
+    castShadow: [40, 25, 80, 0.5],
   },
   {
     altitude: 8, // golden hour
@@ -41,6 +45,7 @@ const KEYFRAMES = [
     sky: [127, 166, 216, 1],
     horizon: [255, 215, 160, 1],
     fog: [240, 208, 176, 1],
+    castShadow: [35, 30, 80, 0.45],
   },
   {
     altitude: 25, // full daylight
@@ -51,6 +56,7 @@ const KEYFRAMES = [
     sky: [93, 156, 230, 1],
     horizon: [216, 232, 245, 1],
     fog: [230, 238, 245, 1],
+    castShadow: [30, 35, 75, 0.4],
   },
 ]
 
@@ -80,6 +86,7 @@ export function getLighting(altitude) {
     reliefOpacity: mix(a.reliefOpacity, b.reliefOpacity, t),
     shadow: css(mixColor(a.shadow, b.shadow, t)),
     highlight: css(mixColor(a.highlight, b.highlight, t)),
+    castShadow: mixColor(a.castShadow, b.castShadow, t),
     sky: {
       'sky-color': css(mixColor(a.sky, b.sky, t)),
       'horizon-color': css(mixColor(a.horizon, b.horizon, t)),
