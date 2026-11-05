@@ -1,0 +1,20 @@
+{
+  "name": "30-day-map-shadows",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "maplibre-gl": "^6.16.0",
+    "suncalc": "^2.1.1"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "svelte": "^5.57.3",
+    "vite": "^8.3.5"
+  }
+}
