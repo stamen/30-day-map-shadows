@@ -1,21 +1,63 @@
 <script>
-  import { formatTime } from './sun.js'
+  import { formatTime, formatDate } from './sun.js'
+  import { LOCATIONS } from './locations.js'
 
   let {
+    mode = $bindable(),
     minutes = $bindable(),
     dayLength = $bindable(),
+    yearLength = $bindable(),
     playing = $bindable(),
     date = $bindable(),
+    showCoastline = $bindable(),
+    terrain3D = $bindable(),
+    shadowColor = $bindable(),
+    groundColor = $bindable(),
+    locationId = $bindable(),
     sun,
     locationName,
   } = $props()
+
+  const MODES = [
+    { id: 'day', label: 'Time of day' },
+    { id: 'year', label: 'Day of year' },
+  ]
+
+  // Only one thing plays at a time, so switching modes pauses.
+  function setMode(next) {
+    if (next === mode) return
+    playing = false
+    mode = next
+  }
 </script>
 
 <div class="panel">
+  <label>
+    Place
+    <select bind:value={locationId}>
+      {#each LOCATIONS as place}
+        <option value={place.id}>{place.name}</option>
+      {/each}
+    </select>
+  </label>
+
+  <div class="modes" role="radiogroup" aria-label="What plays">
+    {#each MODES as { id, label }}
+      <button role="radio" aria-checked={mode === id} class:active={mode === id} onclick={() => setMode(id)}>
+        {label}
+      </button>
+    {/each}
+  </div>
+
   <div class="row">
     <button onclick={() => (playing = !playing)}>{playing ? 'Pause' : 'Play'}</button>
-    <span class="time">{formatTime(minutes)}</span>
-    <span class="muted">solar time · {locationName}</span>
+    {#if mode === 'day'}
+      <span class="time">{formatTime(minutes)}</span>
+      <span class="muted">solar time · {locationName}</span>
+    {:else}
+      <span class="time">{date ? formatDate(date) : '—'}</span>
+      <span class="muted">at {formatTime(minutes)} · {locationName}</span>
+    {/if}
   </div>
 
   <label>
@@ -23,14 +65,41 @@
     <input type="range" min="0" max="1439" step="1" bind:value={minutes} />
   </label>
 
-  <label>
-    One day lasts {dayLength} seconds
-    <input type="range" min="5" max="120" step="1" bind:value={dayLength} />
-  </label>
+  {#if mode === 'day'}
+    <label>
+      One day lasts {dayLength} seconds
+      <input type="range" min="5" max="120" step="1" bind:value={dayLength} />
+    </label>
+  {:else}
+    <label>
+      One year lasts {yearLength} seconds
+      <input type="range" min="5" max="120" step="1" bind:value={yearLength} />
+    </label>
+  {/if}
 
   <label>
     Date
     <input type="date" bind:value={date} />
+  </label>
+
+  <label class="toggle">
+    <input type="checkbox" bind:checked={showCoastline} />
+    Show coastline
+  </label>
+
+  <label class="toggle">
+    <input type="checkbox" bind:checked={terrain3D} />
+    3D terrain
+  </label>
+
+  <label class="toggle">
+    <input type="color" bind:value={shadowColor} />
+    Shadow color
+  </label>
+
+  <label class="toggle">
+    <input type="color" bind:value={groundColor} />
+    Background color
   </label>
 
   <div class="muted">
@@ -69,6 +138,45 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
+  }
+  label.toggle {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .modes {
+    display: flex;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .modes button {
+    flex: 1;
+    width: auto;
+    border: none;
+    border-radius: 0;
+  }
+  .modes button.active {
+    background: rgba(255, 255, 255, 0.85);
+    color: #0a0e1e;
+  }
+  select {
+    padding: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 4px;
+    background: rgba(10, 14, 30, 0.9);
+    color: inherit;
+    font: inherit;
+  }
+  input[type='color'] {
+    width: 28px;
+    height: 20px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 4px;
+    background: none;
+    cursor: pointer;
   }
   button {
     width: 64px;

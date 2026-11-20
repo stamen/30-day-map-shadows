@@ -26,3 +26,33 @@ export function formatTime(minutes) {
   const m = Math.floor(minutes % 60)
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
 }
+
+const DAY_MS = 86_400_000
+
+/**
+ * Move a date forward by whole days, wrapping from Dec 31 back to Jan 1 of the same year.
+ * "2026-12-30", 3 → "2026-01-02"
+ */
+export function addDaysWithinYear(date, days) {
+  const year = Number(date.slice(0, 4))
+  const start = Date.UTC(year, 0, 1)
+  const daysInYear = (Date.UTC(year + 1, 0, 1) - start) / DAY_MS
+  const dayOfYear = Math.round((new Date(`${date}T00:00:00Z`).getTime() - start) / DAY_MS)
+  const next = (((dayOfYear + days) % daysInYear) + daysInYear) % daysInYear
+  return new Date(start + next * DAY_MS).toISOString().slice(0, 10)
+}
+
+/** Number of days in the year of a date like "2026-11-04". */
+export function daysInYearOf(date) {
+  const year = Number(date.slice(0, 4))
+  return (Date.UTC(year + 1, 0, 1) - Date.UTC(year, 0, 1)) / DAY_MS
+}
+
+/** "2026-03-14" → "Mar 14" */
+export function formatDate(date) {
+  return new Date(`${date}T00:00:00Z`).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  })
+}
