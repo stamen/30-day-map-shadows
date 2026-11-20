@@ -19,7 +19,7 @@ yarn dev
 yarn deploy
 ```
 
-This builds the site and pushes `dist/` to the `gh-pages` branch. The first time, go to the repo's **Settings → Pages** on GitHub and set the source to the `gh-pages` branch. The site will be at https://aparlato.github.io/30-day-map-shadows/.
+This builds the site and pushes `dist/` to the `gh-pages` branch. The first time, go to the repo's **Settings → Pages** on GitHub and set the source to the `gh-pages` branch. The site will be at https://stamen.github.io/30-day-map-shadows/.
 
 ## How it works
 

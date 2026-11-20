@@ -1,7 +1,6 @@
-// A minimal MapLibre style: Mapterhorn elevation data, used three ways:
-//   1. 3D terrain (the shape of the land)
-//   2. color-relief (color by elevation)
-//   3. hillshade (light and shadow from the sun)
+// A shadows-only MapLibre style. Mapterhorn elevation gives the 3D shape of the land,
+// which is painted pure white. The cast-shadow layer (added in MapView) paints pure black
+// wherever the sun can't reach. Nothing else: no hillshade, no elevation colors, no sky.
 
 const mapterhorn = {
   type: 'raster-dem',
@@ -11,25 +10,38 @@ const mapterhorn = {
   attribution: '<a href="https://mapterhorn.com/attribution">© Mapterhorn</a>'
 };
 
+// How much to stretch elevation. The shadows always use this, so their lengths stay the same;
+// the 3D terrain uses it only when "3D terrain" is on.
+export const EXAGGERATION = 1.5;
+
 export const style = {
   version: 8,
-  // We update the lighting every frame ourselves, so paint changes should apply instantly.
-  // (With 3D terrain, MapLibre's built-in transitions also leave stale colors on the ground.)
+  // With 3D terrain, MapLibre's built-in transitions leave stale colors on the ground.
   transition: { duration: 0, delay: 0 },
   sources: {
     // MapLibre recommends separate sources for terrain and for layers.
     terrain: { ...mapterhorn, maxzoom: 14 },
-    dem: { ...mapterhorn, maxzoom: 15 }
+    dem: { ...mapterhorn, maxzoom: 15 },
+    // OpenMapTiles-schema vector tiles, only used for the optional coastline.
+    openmaptiles: {
+      type: 'vector',
+      url: 'https://tiles.openfreemap.org/planet',
+      attribution:
+        '<a href="https://openfreemap.org">OpenFreeMap</a> © <a href="https://www.openmaptiles.org/">OpenMapTiles</a> Data from <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }
   },
-  terrain: { source: 'terrain', exaggeration: 1.5 },
+  // Starts flat (exaggeration 0): the land has no height, but the shadows still drape onto it.
+  terrain: { source: 'terrain', exaggeration: 0 },
   layers: [
     {
+      // Seen above the horizon when the map is tilted.
       id: 'background',
       type: 'background',
-      paint: { 'background-color': '#0b1026' }
+      paint: { 'background-color': '#000000' }
     },
     {
-      id: 'relief',
+      // The lit ground: white everywhere, at every elevation.
+      id: 'ground',
       type: 'color-relief',
       source: 'dem',
       paint: {
@@ -38,30 +50,21 @@ export const style = {
           ['linear'],
           ['elevation'],
           0,
-          '#dfe6e9',
+          '#ffffff',
           1,
           '#ffffff'
-          // 0, '#6f8f5e',
-          // 800, '#93aa74',
-          // 1600, '#b7b386',
-          // 2200, '#a89478',
-          // 2800, '#bdb3a8',
-          // 3400, '#e6e7ec',
-          // 4500, '#ffffff',
         ]
       }
     },
     {
-      id: 'hillshade',
-      type: 'hillshade',
-      source: 'dem',
-      paint: {
-        // "basic" lights each slope by the angle between it and the sun.
-        'hillshade-method': 'basic',
-        // Light direction is relative to north, not to the screen.
-        'hillshade-illumination-anchor': 'map',
-        'hillshade-exaggeration': 0.6
-      }
+      // Optional: the outline of the ocean polygons is the coastline. Drawn above the shadows.
+      id: 'coastline',
+      type: 'line',
+      source: 'openmaptiles',
+      'source-layer': 'water',
+      filter: ['==', ['get', 'class'], 'ocean'],
+      layout: { visibility: 'none', 'line-join': 'round' },
+      paint: { 'line-color': '#000000', 'line-width': 1.5 }
     }
   ]
 };

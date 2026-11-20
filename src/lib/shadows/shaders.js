@@ -100,7 +100,8 @@ uniform vec4 u_window;        // which part of the horizon map this tile covers:
 uniform int u_directions;
 uniform float u_sunAzimuth;   // degrees clockwise from north
 uniform float u_sunAltitude;  // degrees above the horizon
-uniform float u_softness;     // degrees over which a shadow edge fades
+uniform float u_softness;     // degrees over which a shadow edge fades, in 'soft' mode
+uniform int u_edge;           // 0 = soft, 1 = one-pixel fade, 2 = hard (see EDGE in ShadowLayer.js)
 uniform vec4 u_color;         // shadow color and opacity
 
 out vec4 fragColor;
@@ -125,7 +126,16 @@ void main() {
   int after = (before + 1) % u_directions;
   float horizon = mix(horizonAt(before, uv), horizonAt(after, uv), fract(slot));
 
-  float shadow = 1.0 - smoothstep(horizon - u_softness, horizon + u_softness, u_sunAltitude);
+  // How far the sun is above (+) or below (−) the horizon here, in degrees.
+  float clearance = u_sunAltitude - horizon;
+  // How much that changes from one pixel to the next (used by the one-pixel fade).
+  float perPixel = max(fwidth(clearance), 1e-4);
+
+  float lit;
+  if (u_edge == 2) lit = step(0.0, clearance);
+  else if (u_edge == 1) lit = clamp(clearance / perPixel + 0.5, 0.0, 1.0);
+  else lit = smoothstep(-u_softness, u_softness, clearance);
+  float shadow = 1.0 - lit;
   float alpha = shadow * u_color.a;
   fragColor = vec4(u_color.rgb * alpha, alpha); // MapLibre expects premultiplied alpha
 }`
