@@ -4,5 +4,23 @@ body,
   margin: 0;
   height: 100%;
   background: #0b1026;
-  font-family: system-ui, sans-serif;
+  font-family: 'Archivo', system-ui, sans-serif;
+}
+
+/* The heavy face, for titles and a few key labels. */
+.heavy {
+  font-family: 'Archivo Black', system-ui, sans-serif;
+}
+
+/* Form controls don't inherit the page font by default. */
+button,
+input,
+select {
+  font: inherit;
+}
+
+/* The map's zoom and compass buttons go just below the color panel in the top right. */
+.maplibregl-map .maplibregl-ctrl-top-right {
+  top: calc(16px + var(--colors-panel-height, 0px));
+  right: 6px;
 }

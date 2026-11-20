@@ -29,28 +29,26 @@
     playing = false
     mode = next
   }
+
+  // Tell the page how tall the color panel is, so the map's zoom buttons can sit below it.
+  let colorsHeight = $state(0)
+  $effect(() => {
+    document.documentElement.style.setProperty('--colors-panel-height', `${colorsHeight}px`)
+  })
 </script>
 
-<div class="panel">
-  <label>
-    Place
-    <select bind:value={locationId}>
-      {#each LOCATIONS as place}
-        <option value={place.id}>{place.name}</option>
-      {/each}
-    </select>
-  </label>
-
+<!-- Bottom left: the clock -->
+<div class="panel bottom-left">
   <div class="modes" role="radiogroup" aria-label="What plays">
     {#each MODES as { id, label }}
-      <button role="radio" aria-checked={mode === id} class:active={mode === id} onclick={() => setMode(id)}>
+      <button class="heavy" role="radio" aria-checked={mode === id} class:active={mode === id} onclick={() => setMode(id)}>
         {label}
       </button>
     {/each}
   </div>
 
   <div class="row">
-    <button onclick={() => (playing = !playing)}>{playing ? 'Pause' : 'Play'}</button>
+    <button class="heavy" onclick={() => (playing = !playing)}>{playing ? 'Pause' : 'Play'}</button>
     {#if mode === 'day'}
       <span class="time">{formatTime(minutes)}</span>
       <span class="muted">solar time · {locationName}</span>
@@ -61,25 +59,56 @@
   </div>
 
   <label>
-    Time of day
+    <span class="heavy">Time of day</span>
     <input type="range" min="0" max="1439" step="1" bind:value={minutes} />
   </label>
 
   {#if mode === 'day'}
     <label>
-      One day lasts {dayLength} seconds
+      <span class="heavy">One day lasts {dayLength} seconds</span>
       <input type="range" min="5" max="120" step="1" bind:value={dayLength} />
     </label>
   {:else}
     <label>
-      One year lasts {yearLength} seconds
+      <span class="heavy">One year lasts {yearLength} seconds</span>
       <input type="range" min="5" max="120" step="1" bind:value={yearLength} />
     </label>
   {/if}
 
   <label>
-    Date
+    <span class="heavy">Date</span>
     <input type="date" bind:value={date} />
+  </label>
+
+  <div class="muted">
+    Sun: {sun.altitude.toFixed(1)}° high, from {sun.azimuth.toFixed(0)}°
+  </div>
+</div>
+
+<!-- Top right: colors. The map's zoom buttons sit just below (see app.css). -->
+<div class="panel top-right" bind:offsetHeight={colorsHeight}>
+  <h2 class="heavy">Color</h2>
+
+  <label class="toggle">
+    <input type="color" bind:value={shadowColor} />
+    Shadow color
+  </label>
+
+  <label class="toggle">
+    <input type="color" bind:value={groundColor} />
+    Background color
+  </label>
+</div>
+
+<!-- Bottom right: where to look, and how -->
+<div class="panel bottom-right">
+  <label>
+    <span class="heavy">Place</span>
+    <select bind:value={locationId}>
+      {#each LOCATIONS as place}
+        <option value={place.id}>{place.name}</option>
+      {/each}
+    </select>
   </label>
 
   <label class="toggle">
@@ -91,36 +120,39 @@
     <input type="checkbox" bind:checked={terrain3D} />
     3D terrain
   </label>
-
-  <label class="toggle">
-    <input type="color" bind:value={shadowColor} />
-    Shadow color
-  </label>
-
-  <label class="toggle">
-    <input type="color" bind:value={groundColor} />
-    Background color
-  </label>
-
-  <div class="muted">
-    Sun: {sun.altitude.toFixed(1)}° high, from {sun.azimuth.toFixed(0)}°
-  </div>
 </div>
 
 <style>
   .panel {
     position: absolute;
-    left: 16px;
-    bottom: 32px;
-    width: 260px;
+    box-sizing: border-box;
     padding: 14px;
     display: flex;
     flex-direction: column;
     gap: 10px;
     border-radius: 8px;
-    background: rgba(10, 14, 30, 0.75);
+    background: rgba(0, 0, 0, 0.75);
     color: #f2f2f5;
     font-size: 13px;
+  }
+  .bottom-left {
+    left: 16px;
+    bottom: 32px;
+    width: 288px;
+  }
+  .top-right {
+    top: 16px;
+    right: 16px;
+  }
+  .bottom-right {
+    right: 16px;
+    bottom: 32px;
+    width: 200px;
+  }
+  h2 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 400;
   }
   .row {
     display: flex;
@@ -159,13 +191,16 @@
   }
   .modes button.active {
     background: rgba(255, 255, 255, 0.85);
-    color: #0a0e1e;
+    color: #000000;
+  }
+  input[type='range'] {
+    accent-color: #000000;
   }
   select {
     padding: 4px;
     border: 1px solid rgba(255, 255, 255, 0.4);
     border-radius: 4px;
-    background: rgba(10, 14, 30, 0.9);
+    background: rgba(0, 0, 0, 0.9);
     color: inherit;
     font: inherit;
   }

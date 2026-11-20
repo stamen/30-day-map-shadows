@@ -133,7 +133,7 @@
     max-width: calc(100% - 32px);
     padding: 8px 14px;
     border-radius: 8px;
-    background: rgba(10, 14, 30, 0.75);
+    background: rgba(0, 0, 0, 0.75);
     color: #f2f2f5;
     font-size: 13px;
     text-align: center;
